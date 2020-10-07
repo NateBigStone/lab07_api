@@ -1,16 +1,19 @@
 import requests
+import pandas as pd
 from env import *
+import time
 from datetime import datetime
-import subprocess
 import logging
 
 
-timezone = subprocess.check_output(["date", "+%Z"]).decode('UTF-8').strip()
 key = os.environ.get('WEATHER_KEY')
 url = os.environ.get('BASE_URL')
 env = os.environ.get("ENV")
 log_level = logging.DEBUG if env == "stage" else logging.ERROR
-logging.basicConfig(filename='weather-messages.log', filemode='a', format='%(levelname)s %(asctime)s - %(message)s', level=log_level)
+logging.basicConfig(filename='weather-messages.log',
+                    filemode='a',
+                    format='%(levelname)s %(asctime)s - %(message)s',
+                    level=log_level)
 
 
 def main():
@@ -24,6 +27,10 @@ def main():
         temp = data['main']['temp']
         print(f'The weather is {weather_description}, the temperature is {temp:.2f}F.')
     elif data and query_type == 'forecast':
+        table_data = {}
+        indexes = []
+        table_data['Temperature'] = []
+        table_data['Wind'] = []
         forecast_items = data['list']
         for forecast in forecast_items:
             timestamp = forecast['dt']
@@ -32,10 +39,15 @@ def main():
             to the system time where this app is run. Ideally, it'd be nice to have the time zone of the city, but that
             would require another API call. I'm opting to keep it the system time of the user
             """
-            date = datetime.fromtimestamp(timestamp)
+            friendly_time = datetime.fromtimestamp(timestamp).strftime('%H:%M')
+            day = time.strftime('%A', time.localtime(timestamp))
             temp = forecast['main']['temp']
             wind = forecast['wind']['speed']
-            print(f'{date}{timezone} - temp: {temp}F\twind: {wind}MPH')
+            table_data['Temperature'].append(f'{temp}°F')
+            table_data['Wind'].append(f'{wind}MPH')
+            indexes.append(f'{day} {friendly_time}')
+        table = pd.DataFrame(table_data, index=indexes)
+        print(f'\n{table}')
 
 
 def api_call(city, country, query_type):
