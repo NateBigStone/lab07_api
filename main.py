@@ -1,9 +1,16 @@
 import requests
 from env import *
 from datetime import datetime
+import subprocess
+import logging
 
+
+timezone = subprocess.check_output(["date", "+%Z"]).decode('UTF-8').strip()
 key = os.environ.get('WEATHER_KEY')
 url = os.environ.get('BASE_URL')
+env = os.environ.get("ENV")
+log_level = logging.DEBUG if env == "stage" else logging.ERROR
+logging.basicConfig(filename='weather-messages.log', filemode='a', format='%(levelname)s %(asctime)s - %(message)s', level=log_level)
 
 
 def main():
@@ -20,11 +27,15 @@ def main():
         forecast_items = data['list']
         for forecast in forecast_items:
             timestamp = forecast['dt']
+            """
+            The API does not include the timezone offset of the city, so the choices are either UTC, or UTC converted
+            to the system time where this app is run. Ideally, it'd be nice to have the time zone of the city, but that
+            would require another API call. I'm opting to keep it the system time of the user
+            """
             date = datetime.fromtimestamp(timestamp)
             temp = forecast['main']['temp']
             wind = forecast['wind']['speed']
-            print(f'at {date} temp is {temp}F, and wind is {wind}')
-        print(data)
+            print(f'{date}{timezone} - temp: {temp}F\twind: {wind}MPH')
 
 
 def api_call(city, country, query_type):
@@ -36,28 +47,16 @@ def api_call(city, country, query_type):
             response_code = resp['cod']
             if int(response_code) == 200:
                 return_resp = resp
+                logging.debug(resp)
             else:
                 raise Exception(f'Bad response: {response_code}')
         except Exception as e:
-            print(e)
+            print(f'Error- {e}')
+            logging.error(e)
     else:
-        print('Missing environment variable(s)')
+        logging.error('Missing environment variable(s)')
     return return_resp
 
 
 if __name__ == '__main__':
     main()
-
-
-#
-# Will you show the local time in Minnesota, or the UTC time? Why? Add some comments to your program explaining your choice. Reading: Unix Time
-#
-# Part 3: Logging vs Print
-#
-# When do you use one, when do you use the other? Replace any message that are only of interest to the developer with logging. When you run your program, it should only print user-friendly messages.
-#
-# Make sure you can find the log output from your program.
-#
-# Should you log sensitive information, for example, values of API keys?
-#
-# To Submit: create GitHub repository for this program, with example log output. Submit repository link to the D2L dropbox.
