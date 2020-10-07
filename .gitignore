@@ -2,4 +2,4 @@
 requirements.txt
 env.py
 __pycache__/
-#*.log commenting outt to show logs
+*.log
