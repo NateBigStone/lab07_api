@@ -1,4 +1,4 @@
-Part 1: Weather Forecast  
+### Part 1: Weather Forecast  
 
 Use the forecast API to create a detailed, neatly formatted 5-day forecast, for anywhere the user chooses.
 
@@ -10,11 +10,11 @@ Your forecast should show the temperature and unit (F or C), weather description
 
 Your program should handle errors. What type of errors do you anticipate? How will you deal with them?
 
-Part 2: Time choice
+### Part 2: Time choice
 
 Will you show the local time in Minnesota, or the UTC time? Why? Add some comments to your program explaining your choice. Reading: Unix Time
 
-Part 3: Logging vs Print
+### Part 3: Logging vs Print
 
 When do you use one, when do you use the other? Replace any message that are only of interest to the developer with logging. When you run your program, it should only print user-friendly messages. 
 
